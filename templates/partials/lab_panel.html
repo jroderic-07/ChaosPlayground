@@ -1,21 +1,26 @@
+{% from "partials/difficulty_badge.html" import difficulty_badge %}
+
 <div class="rounded-lg border border-surface-border bg-surface-raised p-6">
-    <div class="mb-6">
-        <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Lab Scenario</p>
-        <h3 class="mt-2 text-xl font-semibold text-white">{{ lab.name }}</h3>
+    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Lab Scenario</p>
+            <h3 class="mt-2 text-xl font-semibold text-white">{{ lab.title }}</h3>
+        </div>
+        {{ difficulty_badge(lab.difficulty) }}
     </div>
 
     <div class="rounded-md border border-amber-500/20 bg-amber-500/5 p-5">
         <p class="text-xs font-medium uppercase tracking-wider text-amber-400">Problem Statement</p>
-        <p class="mt-3 text-sm leading-relaxed text-gray-300">{{ lab.problem_statement }}</p>
+        <p class="mt-3 text-sm leading-relaxed text-gray-300">{{ lab.description }}</p>
     </div>
 
-    <div class="mt-8 flex items-center gap-4">
-        <button
-            type="button"
-            class="rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-colors hover:bg-accent-muted"
-        >
-            Start Lab
-        </button>
-        <span class="text-xs text-gray-500">Status: {{ lab.status }}</span>
+    {% with sandbox_active=sandbox_active %}
+    {% include "partials/terminal_slot.html" %}
+    {% endwith %}
+
+    <div class="mt-8">
+        {% with sandbox_active=sandbox_active %}
+        {% include "partials/lab_controls.html" %}
+        {% endwith %}
     </div>
 </div>

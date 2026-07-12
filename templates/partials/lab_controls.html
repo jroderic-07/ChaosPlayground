@@ -1,0 +1,23 @@
+<div id="lab-controls">
+    {% if sandbox_active %}
+    {% include "partials/lab_active_banner.html" %}
+    {% else %}
+    <button
+        type="button"
+        hx-post="/api/labs/{{ lab.id }}/start"
+        hx-target="#lab-controls"
+        hx-swap="innerHTML"
+        hx-indicator="#start-lab-indicator"
+        class="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-colors hover:bg-accent-muted disabled:cursor-not-allowed disabled:opacity-70 htmx-request-disabled"
+    >
+        <span class="start-lab-label">Start Lab Sandbox</span>
+        <span id="start-lab-indicator" class="htmx-indicator inline-flex items-center gap-2">
+            <svg class="h-4 w-4 animate-spin text-surface" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span>Provisioning Sandbox...</span>
+        </span>
+    </button>
+    {% endif %}
+</div>

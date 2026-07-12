@@ -1,0 +1,10 @@
+{% macro difficulty_badge(difficulty) %}
+{% set styles = {
+    "beginner": "bg-emerald-500/20 text-emerald-400",
+    "intermediate": "bg-amber-500/20 text-amber-400",
+    "advanced": "bg-red-500/20 text-red-400",
+} %}
+<span class="rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide {{ styles.get(difficulty, 'bg-gray-700/50 text-gray-500') }}">
+    {{ difficulty }}
+</span>
+{% endmacro %}

@@ -1,4 +1,4 @@
-from labs.base import BaseChaosLab, LabMetadata, DockerContainer, exec_exit_code
+from labs.base import BaseChaosLab, DockerContainer, LabMetadata, exec_exit_code
 
 DISK_EXHAUSTION_LOG_PATH = "/var/log/app/debug_trace.log"
 CPU_ZOMBIE_PATTERN = "while true; do true; done"

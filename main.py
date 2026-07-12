@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.htmx import is_htmx_request
-from app.core.labs import LABS
+from app.core.labs import get_all_lab_metadata
 from app.core.templates import templates
 from app.routers import labs
 
@@ -33,7 +33,7 @@ async def home(request: Request) -> HTMLResponse:
         request=request,
         name="base.html",
         context={
-            "labs": LABS,
+            "labs": get_all_lab_metadata(),
             "active_lab": None,
             "page_title": "Home",
             "is_home": True,

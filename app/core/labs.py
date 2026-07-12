@@ -1,33 +1,11 @@
-LABS = [
-    {
-        "id": "latency-spike",
-        "name": "Latency Spike",
-        "status": "idle",
-        "problem_statement": (
-            "P99 response times have jumped from 120ms to over 2s. Users are reporting "
-            "timeouts on checkout. No deployments have occurred in the last 6 hours."
-        ),
-    },
-    {
-        "id": "memory-leak",
-        "name": "Memory Leak",
-        "status": "idle",
-        "problem_statement": (
-            "Memory usage on api-worker pods is climbing steadily with flat traffic. "
-            "OOM kills started 20 minutes ago and Kubernetes is thrashing restarts."
-        ),
-    },
-    {
-        "id": "cascade-failure",
-        "name": "Cascade Failure",
-        "status": "idle",
-        "problem_statement": (
-            "The auth service went offline and downstream services are failing open. "
-            "Error rate is at 34% and climbing as retries amplify load across the mesh."
-        ),
-    },
-]
+from labs.base import LabMetadata
+from labs.registry import get_lab as get_registry_lab, list_labs
 
 
-def get_lab(lab_id: str) -> dict | None:
-    return next((lab for lab in LABS if lab["id"] == lab_id), None)
+def get_all_lab_metadata() -> list[LabMetadata]:
+    return [lab.metadata for lab in list_labs()]
+
+
+def get_lab_metadata(lab_id: str) -> LabMetadata | None:
+    lab = get_registry_lab(lab_id)
+    return lab.metadata if lab else None
