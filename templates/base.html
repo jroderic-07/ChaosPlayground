@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} · ChaosPlayground</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        surface: {
+                            DEFAULT: '#0f1419',
+                            raised: '#1a1f2e',
+                            border: '#2d3748',
+                        },
+                        accent: {
+                            DEFAULT: '#22d3ee',
+                            muted: '#0891b2',
+                        },
+                    },
+                },
+            },
+        };
+    </script>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+        body { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+
+        #sidebar {
+            width: 16rem;
+            transition: width 0.25s ease;
+        }
+        #sidebar.collapsed {
+            width: 3.5rem;
+        }
+        #sidebar.collapsed .sidebar-text,
+        #sidebar.collapsed .sidebar-detail {
+            display: none;
+        }
+        #sidebar.collapsed .sidebar-header-link {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        #sidebar.collapsed .sidebar-nav {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        #sidebar.collapsed .sidebar-lab-link {
+            justify-content: center;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        #sidebar.collapsed .sidebar-footer {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        #sidebar-chevron {
+            transition: transform 0.25s ease;
+        }
+        #sidebar.collapsed #sidebar-chevron {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="h-full bg-surface text-gray-200 antialiased">
+    <div class="flex h-full min-h-screen">
+        <!-- Sidebar -->
+        <aside
+            id="sidebar"
+            class="relative flex shrink-0 flex-col border-r border-surface-border bg-surface-raised"
+        >
+            <button
+                id="sidebar-toggle"
+                type="button"
+                aria-label="Toggle sidebar"
+                aria-expanded="true"
+                class="absolute -right-3 top-7 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-surface-border bg-surface-raised text-gray-400 shadow-sm transition-colors hover:border-accent/40 hover:text-accent"
+            >
+                <svg
+                    id="sidebar-chevron"
+                    class="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+
+            <div class="border-b border-surface-border px-5 py-6">
+                <a
+                    href="/"
+                    title="Home"
+                    class="sidebar-header-link group flex rounded-md transition-colors hover:bg-white/5 -mx-2 px-2 py-1"
+                >
+                    <div class="flex min-w-0 items-center gap-2">
+                        <span class="inline-block h-2.5 w-2.5 shrink-0 rounded-full bg-accent animate-pulse group-hover:bg-accent-muted"></span>
+                        <div class="sidebar-text min-w-0">
+                            <h1 class="truncate text-sm font-semibold tracking-wide text-white uppercase group-hover:text-accent">ChaosPlayground</h1>
+                            <p class="mt-1 truncate text-xs text-gray-500 group-hover:text-gray-400">SRE War Room Simulator</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav flex-1 overflow-y-auto overflow-x-hidden px-3 py-4">
+                <p class="sidebar-text mb-3 px-2 text-xs font-medium uppercase tracking-wider text-gray-500">Labs</p>
+                <ul class="space-y-1">
+                    {% for lab in labs %}
+                    <li>
+                        <a
+                            href="/labs/{{ lab.id }}"
+                            title="{{ lab.name }}"
+                            class="sidebar-lab-link group flex items-center justify-between rounded-md px-3 py-2.5 text-sm transition-colors
+                                {% if active_lab and active_lab.id == lab.id %}
+                                    bg-accent/10 text-accent border border-accent/20
+                                {% else %}
+                                    text-gray-400 hover:bg-white/5 hover:text-gray-200
+                                {% endif %}"
+                        >
+                            <span class="flex min-w-0 items-center gap-2.5">
+                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-surface text-[10px] font-semibold uppercase text-gray-500 group-hover:text-gray-300
+                                    {% if active_lab and active_lab.id == lab.id %}text-accent{% endif %}">
+                                    {{ lab.name[0] }}
+                                </span>
+                                <span class="sidebar-text truncate">{{ lab.name }}</span>
+                            </span>
+                            <span class="sidebar-detail rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide
+                                {% if lab.status == 'active' %}
+                                    bg-amber-500/20 text-amber-400
+                                {% else %}
+                                    bg-gray-700/50 text-gray-500
+                                {% endif %}">
+                                {{ lab.status }}
+                            </span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+
+            <div class="border-t border-surface-border px-5 py-4">
+                <div class="sidebar-footer flex items-center gap-2 text-xs text-gray-500">
+                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" title="All systems nominal"></span>
+                    <span class="sidebar-text">All systems nominal</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <main class="flex flex-1 flex-col overflow-hidden">
+            <header class="flex items-center justify-between border-b border-surface-border bg-surface-raised/50 px-8 py-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">{{ page_title }}</h2>
+                    <p class="text-xs text-gray-500">
+                        {% if is_home %}
+                        Welcome to the chaos engineering sandbox
+                        {% else %}
+                        Controlled chaos injection environment
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500">
+                    <span>UTC</span>
+                    <span id="clock" class="font-mono text-gray-400"></span>
+                </div>
+            </header>
+
+            <section class="flex-1 overflow-y-auto p-8">
+                {% if error %}
+                <div class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                    {{ error }}
+                </div>
+                {% elif is_home %}
+                <div class="mx-auto max-w-3xl">
+                    <div class="rounded-lg border border-surface-border bg-surface-raised p-8">
+                        <p class="text-sm leading-relaxed text-gray-300">
+                            ChaosPlayground is an interactive, sandbox-style simulation tool for software and
+                            systems engineers to safely practice DevOps, Site Reliability Engineering (SRE), and
+                            operations workflows.
+                        </p>
+                        <p class="mt-4 text-sm leading-relaxed text-gray-400">
+                            By intentionally injecting controlled infrastructure failures, performance bottlenecks,
+                            and service outages, the platform creates a realistic war room environment — without
+                            touching production.
+                        </p>
+                        <div class="mt-8 rounded-md border border-accent/20 bg-accent/5 p-5">
+                            <p class="text-xs font-medium uppercase tracking-wider text-accent">The aim</p>
+                            <p class="mt-2 text-sm leading-relaxed text-gray-300">
+                                Bridge the gap between theoretical system design and hands-on crisis management.
+                                Build troubleshooting muscle memory, interpret chaotic metrics, and practice
+                                incident response in a safe, local environment.
+                            </p>
+                        </div>
+                        <p class="mt-8 text-sm text-gray-500">
+                            Select a lab from the sidebar to begin.
+                        </p>
+                    </div>
+                </div>
+                {% elif active_lab %}
+                <div class="rounded-lg border border-surface-border bg-surface-raised p-6">
+                    <div class="mb-4 flex items-center gap-3">
+                        <span class="rounded-md bg-accent/10 px-2 py-1 text-xs font-medium text-accent uppercase">
+                            {{ active_lab.status }}
+                        </span>
+                        <h3 class="text-base font-medium text-white">{{ active_lab.name }}</h3>
+                    </div>
+                    <p class="text-sm leading-relaxed text-gray-400">
+                        Lab workspace placeholder. Simulation controls, live metrics, and incident
+                        timelines will render here via HTMX fragments.
+                    </p>
+                    <div class="mt-6 grid grid-cols-3 gap-4">
+                        <div class="rounded-md border border-surface-border bg-surface p-4">
+                            <p class="text-xs uppercase tracking-wide text-gray-500">Requests / s</p>
+                            <p class="mt-1 text-2xl font-semibold text-white">—</p>
+                        </div>
+                        <div class="rounded-md border border-surface-border bg-surface p-4">
+                            <p class="text-xs uppercase tracking-wide text-gray-500">Error Rate</p>
+                            <p class="mt-1 text-2xl font-semibold text-white">—</p>
+                        </div>
+                        <div class="rounded-md border border-surface-border bg-surface p-4">
+                            <p class="text-xs uppercase tracking-wide text-gray-500">P99 Latency</p>
+                            <p class="mt-1 text-2xl font-semibold text-white">—</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toISOString().slice(11, 19);
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const SIDEBAR_COLLAPSED_KEY = 'chaosplayground-sidebar-collapsed';
+
+        function setSidebarCollapsed(collapsed) {
+            sidebar.classList.toggle('collapsed', collapsed);
+            sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+            localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+        }
+
+        setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true');
+
+        sidebarToggle.addEventListener('click', () => {
+            setSidebarCollapsed(!sidebar.classList.contains('collapsed'));
+        });
+    </script>
+</body>
+</html>
