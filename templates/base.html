@@ -96,6 +96,10 @@
                 <a
                     href="/"
                     title="Home"
+                    hx-get="/"
+                    hx-target="#dashboard-panel"
+                    hx-swap="innerHTML"
+                    hx-push-url="true"
                     class="sidebar-header-link group flex rounded-md transition-colors hover:bg-white/5 -mx-2 px-2 py-1"
                 >
                     <div class="flex min-w-0 items-center gap-2">
@@ -116,6 +120,11 @@
                         <a
                             href="/labs/{{ lab.id }}"
                             title="{{ lab.name }}"
+                            hx-get="/labs/{{ lab.id }}"
+                            hx-target="#dashboard-panel"
+                            hx-swap="innerHTML"
+                            hx-push-url="true"
+                            data-lab-id="{{ lab.id }}"
                             class="sidebar-lab-link group flex items-center justify-between rounded-md px-3 py-2.5 text-sm transition-colors
                                 {% if active_lab and active_lab.id == lab.id %}
                                     bg-accent/10 text-accent border border-accent/20
@@ -171,64 +180,17 @@
                 </div>
             </header>
 
-            <section class="flex-1 overflow-y-auto p-8">
+            <section id="dashboard-panel" class="flex-1 overflow-y-auto p-8">
                 {% if error %}
                 <div class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
                     {{ error }}
                 </div>
                 {% elif is_home %}
-                <div class="mx-auto max-w-3xl">
-                    <div class="rounded-lg border border-surface-border bg-surface-raised p-8">
-                        <p class="text-sm leading-relaxed text-gray-300">
-                            ChaosPlayground is an interactive, sandbox-style simulation tool for software and
-                            systems engineers to safely practice DevOps, Site Reliability Engineering (SRE), and
-                            operations workflows.
-                        </p>
-                        <p class="mt-4 text-sm leading-relaxed text-gray-400">
-                            By intentionally injecting controlled infrastructure failures, performance bottlenecks,
-                            and service outages, the platform creates a realistic war room environment — without
-                            touching production.
-                        </p>
-                        <div class="mt-8 rounded-md border border-accent/20 bg-accent/5 p-5">
-                            <p class="text-xs font-medium uppercase tracking-wider text-accent">The aim</p>
-                            <p class="mt-2 text-sm leading-relaxed text-gray-300">
-                                Bridge the gap between theoretical system design and hands-on crisis management.
-                                Build troubleshooting muscle memory, interpret chaotic metrics, and practice
-                                incident response in a safe, local environment.
-                            </p>
-                        </div>
-                        <p class="mt-8 text-sm text-gray-500">
-                            Select a lab from the sidebar to begin.
-                        </p>
-                    </div>
-                </div>
+                {% include "partials/home_panel.html" %}
                 {% elif active_lab %}
-                <div class="rounded-lg border border-surface-border bg-surface-raised p-6">
-                    <div class="mb-4 flex items-center gap-3">
-                        <span class="rounded-md bg-accent/10 px-2 py-1 text-xs font-medium text-accent uppercase">
-                            {{ active_lab.status }}
-                        </span>
-                        <h3 class="text-base font-medium text-white">{{ active_lab.name }}</h3>
-                    </div>
-                    <p class="text-sm leading-relaxed text-gray-400">
-                        Lab workspace placeholder. Simulation controls, live metrics, and incident
-                        timelines will render here via HTMX fragments.
-                    </p>
-                    <div class="mt-6 grid grid-cols-3 gap-4">
-                        <div class="rounded-md border border-surface-border bg-surface p-4">
-                            <p class="text-xs uppercase tracking-wide text-gray-500">Requests / s</p>
-                            <p class="mt-1 text-2xl font-semibold text-white">—</p>
-                        </div>
-                        <div class="rounded-md border border-surface-border bg-surface p-4">
-                            <p class="text-xs uppercase tracking-wide text-gray-500">Error Rate</p>
-                            <p class="mt-1 text-2xl font-semibold text-white">—</p>
-                        </div>
-                        <div class="rounded-md border border-surface-border bg-surface p-4">
-                            <p class="text-xs uppercase tracking-wide text-gray-500">P99 Latency</p>
-                            <p class="mt-1 text-2xl font-semibold text-white">—</p>
-                        </div>
-                    </div>
-                </div>
+                {% with lab=active_lab %}
+                {% include "partials/lab_panel.html" %}
+                {% endwith %}
                 {% endif %}
             </section>
         </main>
@@ -256,6 +218,34 @@
 
         sidebarToggle.addEventListener('click', () => {
             setSidebarCollapsed(!sidebar.classList.contains('collapsed'));
+        });
+
+        const ACTIVE_LAB_CLASSES = ['bg-accent/10', 'text-accent', 'border', 'border-accent/20'];
+        const INACTIVE_LAB_CLASSES = ['text-gray-400', 'hover:bg-white/5', 'hover:text-gray-200'];
+
+        function setActiveLabLink(labId) {
+            document.querySelectorAll('.sidebar-lab-link').forEach((link) => {
+                const isActive = labId && link.dataset.labId === labId;
+                link.classList.remove(...ACTIVE_LAB_CLASSES, ...INACTIVE_LAB_CLASSES);
+                if (isActive) {
+                    link.classList.add(...ACTIVE_LAB_CLASSES);
+                } else {
+                    link.classList.add(...INACTIVE_LAB_CLASSES);
+                }
+            });
+        }
+
+        document.body.addEventListener('htmx:afterOnLoad', (event) => {
+            const trigger = event.detail.elt;
+            if (!trigger || trigger.getAttribute('hx-target') !== '#dashboard-panel') {
+                return;
+            }
+
+            if (trigger.classList.contains('sidebar-lab-link')) {
+                setActiveLabLink(trigger.dataset.labId);
+            } else if (trigger.classList.contains('sidebar-header-link')) {
+                setActiveLabLink(null);
+            }
         });
     </script>
 </body>

@@ -3,7 +3,11 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+
+from app.core.htmx import is_htmx_request
+from app.core.labs import LABS
+from app.core.templates import templates
+from app.routers import labs
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -14,18 +18,17 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-
-templates = Jinja2Templates(directory=BASE_DIR / "templates")
-
-LABS = [
-    {"id": "latency-spike", "name": "Latency Spike", "status": "idle"},
-    {"id": "memory-leak", "name": "Memory Leak", "status": "idle"},
-    {"id": "cascade-failure", "name": "Cascade Failure", "status": "idle"},
-]
+app.include_router(labs.router)
 
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request) -> HTMLResponse:
+    if is_htmx_request(request):
+        return templates.TemplateResponse(
+            request=request,
+            name="partials/home_panel.html",
+        )
+
     return templates.TemplateResponse(
         request=request,
         name="base.html",
@@ -34,34 +37,5 @@ async def home(request: Request) -> HTMLResponse:
             "active_lab": None,
             "page_title": "Home",
             "is_home": True,
-        },
-    )
-
-
-@app.get("/labs/{lab_id}", response_class=HTMLResponse)
-async def lab_detail(request: Request, lab_id: str) -> HTMLResponse:
-    lab = next((item for item in LABS if item["id"] == lab_id), None)
-    if lab is None:
-        return templates.TemplateResponse(
-            request=request,
-            name="base.html",
-            context={
-                "labs": LABS,
-                "active_lab": None,
-                "page_title": "Lab Not Found",
-                "is_home": False,
-                "error": f"Lab '{lab_id}' does not exist.",
-            },
-            status_code=404,
-        )
-
-    return templates.TemplateResponse(
-        request=request,
-        name="base.html",
-        context={
-            "labs": LABS,
-            "active_lab": lab,
-            "page_title": lab["name"],
-            "is_home": False,
         },
     )
