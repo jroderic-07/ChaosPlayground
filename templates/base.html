@@ -64,9 +64,21 @@
         #sidebar.collapsed #sidebar-chevron {
             transform: rotate(180deg);
         }
+
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator,
+        .htmx-request.htmx-indicator {
+            display: inline-flex;
+        }
+        .htmx-request .start-lab-label {
+            display: none;
+        }
     </style>
 </head>
 <body class="h-full bg-surface text-gray-200 antialiased">
+    {% from "partials/difficulty_badge.html" import difficulty_badge %}
     <div class="flex h-full min-h-screen">
         <!-- Sidebar -->
         <aside
@@ -97,7 +109,7 @@
                     href="/"
                     title="Home"
                     hx-get="/"
-                    hx-target="#dashboard-panel"
+                    hx-target="#main-content"
                     hx-swap="innerHTML"
                     hx-push-url="true"
                     class="sidebar-header-link group flex rounded-md transition-colors hover:bg-white/5 -mx-2 px-2 py-1"
@@ -119,9 +131,9 @@
                     <li>
                         <a
                             href="/labs/{{ lab.id }}"
-                            title="{{ lab.name }}"
+                            title="{{ lab.title }}"
                             hx-get="/labs/{{ lab.id }}"
-                            hx-target="#dashboard-panel"
+                            hx-target="#main-content"
                             hx-swap="innerHTML"
                             hx-push-url="true"
                             data-lab-id="{{ lab.id }}"
@@ -135,17 +147,12 @@
                             <span class="flex min-w-0 items-center gap-2.5">
                                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-surface text-[10px] font-semibold uppercase text-gray-500 group-hover:text-gray-300
                                     {% if active_lab and active_lab.id == lab.id %}text-accent{% endif %}">
-                                    {{ lab.name[0] }}
+                                    {{ lab.title[0] }}
                                 </span>
-                                <span class="sidebar-text truncate">{{ lab.name }}</span>
+                                <span class="sidebar-text truncate">{{ lab.title }}</span>
                             </span>
-                            <span class="sidebar-detail rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide
-                                {% if lab.status == 'active' %}
-                                    bg-amber-500/20 text-amber-400
-                                {% else %}
-                                    bg-gray-700/50 text-gray-500
-                                {% endif %}">
-                                {{ lab.status }}
+                            <span class="sidebar-detail">
+                                {{ difficulty_badge(lab.difficulty) }}
                             </span>
                         </a>
                     </li>
@@ -180,7 +187,7 @@
                 </div>
             </header>
 
-            <section id="dashboard-panel" class="flex-1 overflow-y-auto p-8">
+            <section id="main-content" class="flex-1 overflow-y-auto p-8">
                 {% if error %}
                 <div class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
                     {{ error }}
@@ -188,7 +195,7 @@
                 {% elif is_home %}
                 {% include "partials/home_panel.html" %}
                 {% elif active_lab %}
-                {% with lab=active_lab %}
+                {% with lab=active_lab, sandbox_active=sandbox_active|default(false) %}
                 {% include "partials/lab_panel.html" %}
                 {% endwith %}
                 {% endif %}
@@ -237,7 +244,7 @@
 
         document.body.addEventListener('htmx:afterOnLoad', (event) => {
             const trigger = event.detail.elt;
-            if (!trigger || trigger.getAttribute('hx-target') !== '#dashboard-panel') {
+            if (!trigger || trigger.getAttribute('hx-target') !== '#main-content') {
                 return;
             }
 

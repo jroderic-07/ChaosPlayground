@@ -1,0 +1,16 @@
+{% if sandbox_active %}
+<div class="mb-3 flex items-center gap-2">
+    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+    <p class="text-xs font-medium uppercase tracking-wider text-emerald-400">Terminal Simulator</p>
+</div>
+<div class="h-56 overflow-hidden rounded border border-surface-border bg-black/60 p-4 font-mono text-xs text-gray-300">
+    <p><span class="text-accent">root@sandbox</span>:<span class="text-blue-400">~</span># <span class="text-gray-500">connected — interactive shell coming soon</span></p>
+    <p class="mt-2 text-accent">$<span class="animate-pulse">_</span></p>
+</div>
+{% else %}
+<div class="text-center">
+    <p class="text-sm text-gray-500">Terminal unavailable</p>
+    <p class="mt-1 text-xs text-gray-600">Start the sandbox to enable the terminal simulator</p>
+    <div class="mx-auto mt-4 h-40 max-w-lg rounded border border-dashed border-surface-border bg-black/20 opacity-60"></div>
+</div>
+{% endif %}
