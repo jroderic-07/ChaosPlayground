@@ -3,9 +3,8 @@
     <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
     <p class="text-xs font-medium uppercase tracking-wider text-emerald-400">Terminal Simulator</p>
 </div>
-<div class="h-56 overflow-hidden rounded border border-surface-border bg-black/60 p-4 font-mono text-xs text-gray-300">
-    <p><span class="text-accent">root@sandbox</span>:<span class="text-blue-400">~</span># <span class="text-gray-500">connected — interactive shell coming soon</span></p>
-    <p class="mt-2 text-accent">$<span class="animate-pulse">_</span></p>
+<div class="overflow-hidden rounded border border-surface-border bg-[#0a0a0a] p-1">
+    <div id="terminal" data-lab-id="{{ lab.id }}" class="h-56 w-full"></div>
 </div>
 {% else %}
 <div class="text-center">
