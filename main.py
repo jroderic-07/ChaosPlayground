@@ -5,11 +5,15 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.htmx import is_htmx_request
+from app.core.sandbox import stop_sandboxes_on_navigation
 from app.core.labs import get_all_lab_metadata
+from app.core.logging_config import setup_logging
 from app.core.templates import templates
-from app.routers import labs
+from app.routers import labs, terminal
 
 BASE_DIR = Path(__file__).resolve().parent
+
+setup_logging()
 
 app = FastAPI(
     title="ChaosPlayground",
@@ -19,10 +23,13 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(labs.router)
+app.include_router(terminal.router)
 
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request) -> HTMLResponse:
+    stop_sandboxes_on_navigation(request)
+
     if is_htmx_request(request):
         return templates.TemplateResponse(
             request=request,

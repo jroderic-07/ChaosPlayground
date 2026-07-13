@@ -30,12 +30,68 @@ The architecture is deliberately lean, avoiding heavy JavaScript frameworks in f
 
 *   Python 3.10 or newer
 *   `pip` (bundled with Python)
+*   Docker (required for lab sandboxes and the interactive terminal)
 
 On Debian/Ubuntu, if `python3 -m venv` fails, install the venv package first:
 
 ```bash
 sudo apt install python3-venv
 ```
+
+### Docker setup
+
+Lab sandboxes provision real containers via the Docker API. Ensure Docker is installed and running before starting a lab.
+
+**Linux / WSL**
+
+```bash
+# Install Docker (Debian/Ubuntu)
+sudo apt update
+sudo apt install docker.io
+
+# Start the Docker daemon
+sudo service docker start
+```
+
+**Docker Desktop (Windows / macOS / WSL)**
+
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and ensure it is running. On WSL, enable integration for your distro under **Settings → Resources → WSL Integration**.
+
+#### Fix Docker permission denied errors
+
+If starting a lab fails with `PermissionError(13, 'Permission denied')` when connecting to `/var/run/docker.sock`, your user does not have access to the Docker socket. The socket is typically owned by the `docker` group:
+
+```bash
+ls -la /var/run/docker.sock
+# srw-rw---- 1 root docker ... /var/run/docker.sock
+```
+
+Add your user to the `docker` group:
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+Then reload your group membership — either open a new terminal, log out of WSL and back in, or run:
+
+```bash
+newgrp docker
+```
+
+Verify Docker works without `sudo`:
+
+```bash
+groups    # should include "docker"
+docker ps # should succeed
+```
+
+Restart the application after fixing permissions:
+
+```bash
+uvicorn main:app --reload
+```
+
+Do **not** use `sudo uvicorn` or `chmod 666 /var/run/docker.sock` as workarounds — add your user to the `docker` group instead.
 
 ### Setup
 
@@ -74,6 +130,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8080
 ```
 ChaosPlayground/
 ├── app/              # Application package (routers, core logic)
+├── labs/             # Chaos lab scenarios and registry
 ├── static/           # CSS, JS, and other static assets
 ├── templates/        # Jinja2 HTML templates
 ├── main.py           # FastAPI entry point
