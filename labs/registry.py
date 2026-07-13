@@ -23,6 +23,11 @@ CATEGORY_ORDER = [
 DIFFICULTY_ORDER = {"Easy": 0, "Medium": 1, "Hard": 2}
 
 
+class LabSolution(BaseModel):
+    reasoning: str
+    commands: list[str]
+
+
 class LabManifest(BaseModel):
     id: str
     title: str
@@ -33,6 +38,7 @@ class LabManifest(BaseModel):
         default="placeholder",
         description="Key mapping to a Python chaos scenario implementation.",
     )
+    solution: LabSolution
 
 
 class LabCategory(BaseModel):
@@ -49,7 +55,17 @@ class ManifestBackedLab(BaseChaosLab):
 
     @property
     def metadata(self) -> LabMetadata:
-        return LabMetadata(**self._manifest.model_dump())
+        return LabMetadata(
+            id=self._manifest.id,
+            title=self._manifest.title,
+            description=self._manifest.description,
+            category=self._manifest.category,
+            difficulty=self._manifest.difficulty,
+        )
+
+    @property
+    def solution(self) -> LabSolution:
+        return self._manifest.solution
 
     @property
     def image_name(self) -> str:

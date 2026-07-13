@@ -4,5 +4,15 @@
   "description": "A rogue background shell loop is consuming CPU cycles, mimicking a runaway process left behind after a failed deployment.",
   "category": "Linux Fundamentals",
   "difficulty": "Medium",
-  "scenario": "zombie_process"
+  "scenario": "zombie_process",
+  "solution": {
+    "reasoning": "Post-mortem: A deployment script launched a background diagnostic loop via nohup but did not record the PID or register a cleanup step in the runbook. After the deploy was rolled back, the shell loop persisted as an orphaned process, pinning a CPU core at 100% and degrading latency for co-located workloads. The process was hidden from standard service dashboards because it was not managed by systemd or the application supervisor. The fix is to identify the rogue process with ps, terminate it, and confirm CPU utilisation returns to baseline. In production, add deploy teardown hooks and process-tree audits after every release.",
+    "commands": [
+      "top -b -n 1 | head -20",
+      "ps aux --sort=-%cpu | head -10",
+      "ps aux | grep -v grep | grep 'while true'",
+      "kill <PID>",
+      "ps aux | grep -v grep | grep 'while true'"
+    ]
+  }
 }

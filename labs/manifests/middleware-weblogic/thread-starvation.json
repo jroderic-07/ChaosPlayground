@@ -4,5 +4,15 @@
   "description": "The execute thread pool is fully blocked on slow downstream calls, leaving no workers available to accept new inbound requests.",
   "category": "Middleware (WebLogic)",
   "difficulty": "Medium",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: A synchronous EJB method called an external fraud-scoring API with no timeout configured. When the API degraded to 30s+ response times, all 50 execute queue threads blocked waiting for replies. WebLogic began rejecting new requests with 'No resources currently available' even though CPU and heap were healthy. The root cause is thread pool exhaustion from blocking I/O on the request path, not insufficient thread count. The fix is to identify stuck threads via a thread dump, increase the work manager timeout, restart the stuck threads by bouncing the managed server, and confirm queue depth returns to zero. In production, enforce async patterns or circuit breakers for external calls and alert on execute queue length. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "jstack <java-pid> > /tmp/thread_dump.txt",
+      "grep -c 'BLOCKED' /tmp/thread_dump.txt",
+      "grep 'fraud-scoring' /tmp/thread_dump.txt",
+      "cd $DOMAIN_HOME && ./bin/stopManagedWebLogic.sh managed_server1 && ./bin/startManagedWebLogic.sh managed_server1",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }

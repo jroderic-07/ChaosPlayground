@@ -4,5 +4,17 @@
   "description": "Stale and conflicting ARP entries are directing traffic to the wrong interface, causing intermittent packet loss within the subnet.",
   "category": "Networking",
   "difficulty": "Hard",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: After a NIC failover event, two nodes on the same L2 segment advertised the same IP with different MAC addresses. Switches forwarded frames inconsistently, and local ARP caches retained stale bindings for up to 20 minutes (default base_reachable_time). Operators saw intermittent TCP retransmits and ~15% packet loss between app tiers with no routing changes logged. The root cause is conflicting ARP entries on the subnet, not upstream provider outage. The fix is to inspect the ARP table for duplicate IP mappings, flush stale entries, ping to re-learn correct MACs, and confirm loss stops in mtr/tcpdump captures. In production, enable gratuitous ARP on VIP failover and monitor for duplicate IP conflicts. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "ip neigh show",
+      "arp -an | sort",
+      "ping -c 3 <peer-ip>",
+      "sudo ip neigh flush dev eth0",
+      "ping -c 5 <peer-ip>",
+      "ip neigh show <peer-ip>",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }

@@ -4,5 +4,16 @@
   "description": "A recent firewall change is dropping traffic on a required service port, breaking health checks and east-west service communication.",
   "category": "Networking",
   "difficulty": "Medium",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: A security hardening change applied a default-deny iptables policy without an allow rule for TCP/8080 used by the internal API mesh. SYN packets reached the host but were dropped silently with no application-level error — connections timed out after 30 seconds. Monitoring showed healthy processes but failing synthetic probes from peer subnets. The root cause is a missing INPUT/FORWARD rule for a required service port, not service unavailability. The fix is to reproduce with nc/telnet from a peer host, inspect iptables -L -n -v for drop counters, insert the allow rule, persist the ruleset, and confirm health checks pass. In production, require canary connectivity tests before firewall change windows close. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "nc -zv api-host 8080",
+      "sudo iptables -L INPUT -n -v --line-numbers",
+      "sudo iptables -I INPUT -p tcp --dport 8080 -s 10.0.0.0/8 -j ACCEPT",
+      "sudo netfilter-persistent save",
+      "nc -zv api-host 8080",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }

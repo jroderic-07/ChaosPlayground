@@ -4,5 +4,16 @@
   "description": "An application is leaking file descriptors until the process hits ulimit, causing 'too many open files' errors on new connections.",
   "category": "Linux Fundamentals",
   "difficulty": "Hard",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: A connection handler was opening sockets and log files on every request but only closing them on the happy path. Under sustained error-rate spikes, exception branches leaked descriptors until the process hit its soft ulimit (typically 1024). New inbound connections then failed with 'Too many open files', producing a retry storm from clients. The root cause is missing finally/close semantics in the request lifecycle, not insufficient ulimit headroom. The fix is to identify the leaking PID, inspect open FD count under /proc, restart or patch the service, and confirm descriptor count stabilises. In production, add FD utilisation metrics and alert before ulimit is reached. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "grep 'Too many open files' /var/log/syslog",
+      "ps aux | grep <service-name>",
+      "ls /proc/<PID>/fd | wc -l",
+      "cat /proc/<PID>/limits | grep 'open files'",
+      "systemctl restart <service-name>",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }
