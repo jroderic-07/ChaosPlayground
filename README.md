@@ -40,58 +40,120 @@ sudo apt install python3-venv
 
 ### Docker setup
 
-Lab sandboxes provision real containers via the Docker API. Ensure Docker is installed and running before starting a lab.
+Lab sandboxes provision real containers via the Docker API. Docker must be installed, running, and accessible from the same environment where you run `uvicorn`.
 
-**Linux / WSL**
+Verify Docker is working before starting the app:
 
 ```bash
-# Install Docker (Debian/Ubuntu)
-sudo apt update
-sudo apt install docker.io
+ls -la /var/run/docker.sock   # socket should exist
+docker ps                     # should succeed without sudo
+```
 
-# Start the Docker daemon
+Choose **one** of the two setups below. Do not mix Docker Desktop socket forwarding with a separately installed `docker.io` daemon unless you know what you are doing.
+
+---
+
+#### Option A: Docker Desktop (Windows, macOS, or WSL)
+
+Use this if you already have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed on Windows or macOS.
+
+**On Windows with WSL2 (recommended for this project)**
+
+1. Start **Docker Desktop** on Windows and wait until it shows **Running**.
+2. Open **Docker Desktop → Settings → General** and ensure **Use the WSL 2 based engine** is enabled.
+3. Open **Settings → Resources → WSL Integration**:
+   - Enable **Enable integration with my default WSL distro**
+   - Toggle **ON** for your distro (e.g. Ubuntu)
+4. Click **Apply & Restart**.
+5. From Windows PowerShell or CMD, restart WSL:
+
+   ```cmd
+   wsl --shutdown
+   ```
+
+6. Reopen your WSL terminal and verify:
+
+   ```bash
+   ls -la /var/run/docker.sock
+   docker ps
+   ```
+
+If `docker` prints *"activate the WSL integration in Docker Desktop settings"*, the integration step above was not completed or WSL was not restarted.
+
+**On macOS**
+
+Install and start Docker Desktop, then verify `docker ps` works in your terminal.
+
+---
+
+#### Option B: Native Docker inside WSL / Linux
+
+Use this if you want Docker running directly inside your WSL distro (or native Linux) without Docker Desktop.
+
+**Install and start the daemon (Debian/Ubuntu/WSL)**
+
+```bash
+sudo apt update
+sudo apt install -y docker.io
 sudo service docker start
 ```
 
-**Docker Desktop (Windows / macOS / WSL)**
-
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and ensure it is running. On WSL, enable integration for your distro under **Settings → Resources → WSL Integration**.
-
-#### Fix Docker permission denied errors
-
-If starting a lab fails with `PermissionError(13, 'Permission denied')` when connecting to `/var/run/docker.sock`, your user does not have access to the Docker socket. The socket is typically owned by the `docker` group:
-
-```bash
-ls -la /var/run/docker.sock
-# srw-rw---- 1 root docker ... /var/run/docker.sock
-```
-
-Add your user to the `docker` group:
+**Allow your user to run Docker without sudo**
 
 ```bash
 sudo usermod -aG docker $USER
 ```
 
-Then reload your group membership — either open a new terminal, log out of WSL and back in, or run:
+Reload your group membership — open a new terminal, log out of WSL and back in, or run:
 
 ```bash
 newgrp docker
 ```
 
-Verify Docker works without `sudo`:
+**Verify**
 
 ```bash
-groups    # should include "docker"
-docker ps # should succeed
+groups                    # should include "docker"
+ls -la /var/run/docker.sock
+docker ps                 # should succeed without sudo
 ```
 
-Restart the application after fixing permissions:
+**Start Docker automatically (optional)**
+
+If `docker ps` fails after reopening WSL, the daemon may not be running:
+
+```bash
+sudo service docker start
+```
+
+To start Docker whenever WSL launches, add this to your `~/.bashrc` or `~/.profile`:
+
+```bash
+# Start Docker daemon if not already running (native WSL install)
+if ! pgrep -x dockerd > /dev/null 2>&1; then
+    sudo service docker start
+fi
+```
+
+Note: this prompts for your password on first shell open unless you configure passwordless `service docker start` via `sudoers`.
+
+---
+
+#### Troubleshooting Docker errors
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `FileNotFoundError: No such file or directory` on `/var/run/docker.sock` | Docker daemon not running, or Docker Desktop WSL integration not enabled | Follow Option A or B above, then confirm `ls /var/run/docker.sock` succeeds |
+| `PermissionError(13, 'Permission denied')` on `/var/run/docker.sock` | Socket exists but your user is not in the `docker` group | `sudo usermod -aG docker $USER`, then `newgrp docker` |
+| `docker: command could not be found in this WSL 2 distro` | Docker Desktop installed on Windows but WSL integration disabled | Enable WSL Integration in Docker Desktop settings |
+
+Do **not** use `sudo uvicorn` or `chmod 666 /var/run/docker.sock` as workarounds.
+
+After Docker is working, restart the application:
 
 ```bash
 uvicorn main:app --reload
 ```
-
-Do **not** use `sudo uvicorn` or `chmod 666 /var/run/docker.sock` as workarounds — add your user to the `docker` group instead.
 
 ### Setup
 

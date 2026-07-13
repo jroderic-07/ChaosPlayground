@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from app.core.htmx import is_htmx_request
-from app.core.labs import get_all_lab_metadata, get_lab_metadata
+from app.core.labs import get_all_lab_metadata, get_lab_categories, get_lab_metadata
 from app.core.logging_config import get_logger
 from app.core.sandbox import sandbox_manager, stop_sandboxes_on_navigation
 from app.core.templates import templates
@@ -34,6 +34,7 @@ async def lab_detail(request: Request, lab_id: str) -> HTMLResponse:
             request=request,
             name="base.html",
             context={
+                "categories": get_lab_categories(),
                 "labs": get_all_lab_metadata(),
                 "active_lab": None,
                 "page_title": "Lab Not Found",
@@ -62,6 +63,7 @@ async def lab_detail(request: Request, lab_id: str) -> HTMLResponse:
         request=request,
         name="base.html",
         context={
+            "categories": get_lab_categories(),
             "labs": get_all_lab_metadata(),
             "active_lab": metadata,
             "page_title": metadata.title,

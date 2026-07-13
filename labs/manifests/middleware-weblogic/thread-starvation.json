@@ -1,0 +1,8 @@
+{
+  "id": "wl-thread-starvation",
+  "title": "Thread Starvation",
+  "description": "The execute thread pool is fully blocked on slow downstream calls, leaving no workers available to accept new inbound requests.",
+  "category": "Middleware (WebLogic)",
+  "difficulty": "Medium",
+  "scenario": "placeholder"
+}

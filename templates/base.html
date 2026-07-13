@@ -144,6 +144,24 @@
                 transform: translateY(-0.5rem);
             }
         }
+
+        .category-accordion > summary {
+            list-style: none;
+        }
+        .category-accordion > summary::-webkit-details-marker {
+            display: none;
+        }
+        .category-accordion[open] .category-accordion__summary {
+            color: #d1d5db;
+        }
+        #sidebar.collapsed .category-accordion > summary {
+            justify-content: center;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        #sidebar.collapsed .category-accordion__chevron {
+            display: none;
+        }
     </style>
 </head>
 <body class="h-full bg-surface text-gray-200 antialiased">
@@ -193,41 +211,7 @@
                 </a>
             </div>
 
-            <nav class="sidebar-nav flex-1 overflow-y-auto overflow-x-hidden px-3 py-4">
-                <p class="sidebar-text mb-3 px-2 text-xs font-medium uppercase tracking-wider text-gray-500">Labs</p>
-                <ul class="space-y-1">
-                    {% for lab in labs %}
-                    <li>
-                        <a
-                            href="/labs/{{ lab.id }}"
-                            title="{{ lab.title }}"
-                            hx-get="/labs/{{ lab.id }}"
-                            hx-target="#main-content"
-                            hx-swap="innerHTML"
-                            hx-push-url="true"
-                            data-lab-id="{{ lab.id }}"
-                            class="sidebar-lab-link group flex items-center justify-between rounded-md px-3 py-2.5 text-sm transition-colors
-                                {% if active_lab and active_lab.id == lab.id %}
-                                    bg-accent/10 text-accent border border-accent/20
-                                {% else %}
-                                    text-gray-400 hover:bg-white/5 hover:text-gray-200
-                                {% endif %}"
-                        >
-                            <span class="flex min-w-0 items-center gap-2.5">
-                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-surface text-[10px] font-semibold uppercase text-gray-500 group-hover:text-gray-300
-                                    {% if active_lab and active_lab.id == lab.id %}text-accent{% endif %}">
-                                    {{ lab.title[0] }}
-                                </span>
-                                <span class="sidebar-text truncate">{{ lab.title }}</span>
-                            </span>
-                            <span class="sidebar-detail">
-                                {{ difficulty_badge(lab.difficulty) }}
-                            </span>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </nav>
+            {% include "partials/sidebar_categories.html" %}
 
             <div class="border-t border-surface-border px-5 py-4">
                 <div class="sidebar-footer flex items-center gap-2 text-xs text-gray-500">

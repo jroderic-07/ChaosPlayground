@@ -1,0 +1,8 @@
+{
+  "id": "wl-cluster-join",
+  "title": "Misconfigured Cluster Join",
+  "description": "A managed server cannot join the cluster due to mismatched multicast settings, leaving the domain in a split-brain degraded state.",
+  "category": "Middleware (WebLogic)",
+  "difficulty": "Hard",
+  "scenario": "placeholder"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "net-firewall-block",
+  "title": "Firewall Port Blockage",
+  "description": "A recent firewall change is dropping traffic on a required service port, breaking health checks and east-west service communication.",
+  "category": "Networking",
+  "difficulty": "Medium",
+  "scenario": "placeholder"
+}

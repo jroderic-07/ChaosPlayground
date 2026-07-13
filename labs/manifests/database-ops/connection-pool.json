@@ -1,0 +1,8 @@
+{
+  "id": "db-connection-pool",
+  "title": "Connection Pool Exhaustion",
+  "description": "All database connections in the application pool are checked out and idle, causing new requests to time out waiting for a free connection.",
+  "category": "Database Ops",
+  "difficulty": "Medium",
+  "scenario": "placeholder"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "db-slow-query",
+  "title": "Slow Query / Missing Index",
+  "description": "A critical reporting query is scanning millions of rows due to a missing index, driving up database latency and blocking other transactions.",
+  "category": "Database Ops",
+  "difficulty": "Easy",
+  "scenario": "placeholder"
+}
