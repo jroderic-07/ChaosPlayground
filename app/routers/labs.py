@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from app.core.htmx import is_htmx_request
-from app.core.labs import get_all_lab_metadata, get_lab_categories, get_lab_metadata
+from app.core.labs import get_all_lab_metadata, get_lab_categories, get_lab_metadata, get_lab_solution
 from app.core.logging_config import get_logger
 from app.core.sandbox import sandbox_manager, stop_sandboxes_on_navigation
 from app.core.templates import templates
@@ -55,6 +55,7 @@ async def lab_detail(request: Request, lab_id: str) -> HTMLResponse:
             name="partials/lab_panel.html",
             context={
                 "lab": metadata,
+                "solution": get_lab_solution(lab_id),
                 "sandbox_active": sandbox_manager.is_active(lab_id),
             },
         )
@@ -66,6 +67,7 @@ async def lab_detail(request: Request, lab_id: str) -> HTMLResponse:
             "categories": get_lab_categories(),
             "labs": get_all_lab_metadata(),
             "active_lab": metadata,
+            "solution": get_lab_solution(lab_id),
             "page_title": metadata.title,
             "is_home": False,
             "sandbox_active": sandbox_manager.is_active(lab_id),

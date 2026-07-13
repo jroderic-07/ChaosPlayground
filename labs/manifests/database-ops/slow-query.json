@@ -4,5 +4,15 @@
   "description": "A critical reporting query is scanning millions of rows due to a missing index, driving up database latency and blocking other transactions.",
   "category": "Database Ops",
   "difficulty": "Easy",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: A nightly reporting query filtering on orders.created_at was deployed without a supporting index after a schema migration renamed the column. PostgreSQL fell back to a sequential scan across 12 million rows, holding row-level locks longer than expected and inflating p95 query latency from 40ms to 8s. Connection pool saturation followed as application threads blocked waiting for results. The root cause is a missing B-tree index on the filter column, not insufficient hardware. The fix is to confirm the seq scan via EXPLAIN, create the index CONCURRENTLY to avoid blocking writes, and re-run the query plan. In production, add migration checklists that require index review for any new WHERE clause. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "psql -c \"SELECT pid, now()-query_start AS duration, query FROM pg_stat_activity WHERE state = 'active' ORDER BY duration DESC;\"",
+      "psql -c \"EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > now() - interval '7 days';\"",
+      "psql -c \"CREATE INDEX CONCURRENTLY idx_orders_created_at ON orders(created_at);\"",
+      "psql -c \"EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > now() - interval '7 days';\"",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }

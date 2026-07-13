@@ -25,4 +25,8 @@
         {% include "partials/lab_controls.html" %}
         {% endwith %}
     </div>
+
+    {% if solution %}
+    {% include "partials/lab_solution.html" %}
+    {% endif %}
 </div>

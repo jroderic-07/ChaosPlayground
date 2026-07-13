@@ -4,5 +4,15 @@
   "description": "All database connections in the application pool are checked out and idle, causing new requests to time out waiting for a free connection.",
   "category": "Database Ops",
   "difficulty": "Medium",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: A code path introduced during a feature flag rollout acquired connections from the pool but returned them only after a downstream HTTP call that had no timeout. When the payment API stalled, every application thread held a checked-out connection indefinitely. The pool reached max_connections (50/50 active), and new requests queued until they timed out with 'Timeout waiting for idle object'. The root cause is connection leak semantics under slow external dependencies, not undersized pool sizing. The fix is to identify idle-in-transaction sessions, terminate stale backends, deploy a connection timeout patch, and confirm pool checkout wait drops to zero. In production, monitor pool active/idle ratio and idle-in-transaction age. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "psql -c \"SELECT pid, state, now()-state_change AS idle_for, query FROM pg_stat_activity WHERE datname = current_database();\"",
+      "psql -c \"SELECT count(*) FROM pg_stat_activity WHERE state = 'idle in transaction';\"",
+      "psql -c \"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle in transaction' AND now()-state_change > interval '5 minutes';\"",
+      "systemctl restart <application-service>",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }

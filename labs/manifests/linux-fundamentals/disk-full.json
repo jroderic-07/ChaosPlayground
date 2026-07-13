@@ -4,5 +4,15 @@
   "description": "A runaway logging process has filled the root filesystem with a massive debug trace file, causing write failures across the host.",
   "category": "Linux Fundamentals",
   "difficulty": "Easy",
-  "scenario": "disk_exhaustion"
+  "scenario": "disk_exhaustion",
+  "solution": {
+    "reasoning": "Post-mortem: Debug tracing was enabled during a prior incident investigation but never disabled. The application wrote continuously to /var/log/app/debug_trace.log with no log rotation, size cap, or retention policy configured. Over several hours the file grew to 300MB and consumed all remaining space on the container root filesystem. Unrelated services began failing with 'No space left on device' errors because they share the same volume. The immediate fix is to delete the orphaned trace file and confirm free space is restored. In production, follow up with logrotate, disk usage alerts, and guardrails on debug logging duration.",
+    "commands": [
+      "df -h",
+      "du -sh /var/log/app/*",
+      "ls -lh /var/log/app/debug_trace.log",
+      "rm /var/log/app/debug_trace.log",
+      "df -h"
+    ]
+  }
 }

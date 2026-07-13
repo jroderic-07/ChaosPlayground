@@ -4,5 +4,16 @@
   "description": "Applications cannot resolve upstream service hostnames after a resolver misconfiguration, causing cascading connection failures.",
   "category": "Networking",
   "difficulty": "Easy",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: A routine /etc/resolv.conf update during a VPN rollout pointed nameservers to an internal resolver that was not yet peered with the production DNS zone. Application startup succeeded, but every outbound call to *.svc.internal failed with 'Temporary failure in name resolution'. Health checks passed on localhost endpoints, masking the issue until cross-service traffic ramped. The root cause is a resolver pointing to an unreachable or non-authoritative nameserver, not application bugs. The fix is to verify resolv.conf, test resolution with dig/nslookup, restore the correct nameserver entries, and confirm application connectivity recovers without restart if the resolver is re-read dynamically. In production, add synthetic DNS checks from every node class. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "cat /etc/resolv.conf",
+      "dig payments.svc.internal +short",
+      "nslookup payments.svc.internal",
+      "sudo tee /etc/resolv.conf <<EOF\nnameserver 10.0.0.2\nsearch svc.internal\nEOF",
+      "dig payments.svc.internal +short",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }

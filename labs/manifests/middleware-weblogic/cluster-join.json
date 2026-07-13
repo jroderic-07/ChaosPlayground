@@ -4,5 +4,16 @@
   "description": "A managed server cannot join the cluster due to mismatched multicast settings, leaving the domain in a split-brain degraded state.",
   "category": "Middleware (WebLogic)",
   "difficulty": "Hard",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: A managed server rebuild used a config template with the wrong cluster multicast address (228.10.10.10 instead of 228.10.10.50). The server started cleanly but never received cluster heartbeats, so it operated as a standalone node serving traffic without session replication or load-balancer registration. Operators observed intermittent 502s as the load balancer routed to a node the rest of the cluster did not recognise. The root cause is inconsistent cluster communication settings across managed server configs, not network partition. The fix is to compare ClusterMBean multicast address and port across all servers, align config.xml, restart the isolated managed server, and confirm it appears in the RUNNING state in the admin console cluster membership tab. In production, store cluster settings in a single source-of-truth template and validate on boot. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "grep -A5 'cluster' $DOMAIN_HOME/config/config.xml",
+      "cd $DOMAIN_HOME && ./bin/stopManagedWebLogic.sh managed_server2",
+      "vi $DOMAIN_HOME/config/config.xml  # align multicast-address and cluster-name",
+      "cd $DOMAIN_HOME && ./bin/startManagedWebLogic.sh managed_server2",
+      "curl -s http://admin-host:7001/console | grep -i cluster",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }

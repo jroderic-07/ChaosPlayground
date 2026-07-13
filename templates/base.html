@@ -162,6 +162,17 @@
         #sidebar.collapsed .category-accordion__chevron {
             display: none;
         }
+
+        .lab-solution > summary {
+            list-style: none;
+        }
+        .lab-solution > summary::-webkit-details-marker {
+            display: none;
+        }
+        .lab-solution[open] > summary {
+            color: #22d3ee;
+            border-bottom: 1px solid #2d3748;
+        }
     </style>
 </head>
 <body class="h-full bg-surface text-gray-200 antialiased">
@@ -248,7 +259,7 @@
                 {% elif is_home %}
                 {% include "partials/home_panel.html" %}
                 {% elif active_lab %}
-                {% with lab=active_lab, sandbox_active=sandbox_active|default(false) %}
+                {% with lab=active_lab, sandbox_active=sandbox_active|default(false), solution=solution|default(none) %}
                 {% include "partials/lab_panel.html" %}
                 {% endwith %}
                 {% endif %}

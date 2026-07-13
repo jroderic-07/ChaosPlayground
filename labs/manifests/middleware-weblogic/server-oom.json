@@ -4,5 +4,15 @@
   "description": "A WebLogic managed server has exhausted its heap during a traffic spike, triggering frequent GC pauses and eventual OutOfMemoryError crashes.",
   "category": "Middleware (WebLogic)",
   "difficulty": "Easy",
-  "scenario": "placeholder"
+  "scenario": "placeholder",
+  "solution": {
+    "reasoning": "Post-mortem: Heap usage climbed steadily after a deployment increased default HTTP session timeout from 30 minutes to 24 hours without a corresponding eviction policy review. Under a flash-sale traffic spike, session objects accumulated in the old generation faster than CMS could collect them. GC pause times exceeded 4 seconds, thread pools stalled, and the JVM eventually threw java.lang.OutOfMemoryError: Java heap space. The root cause is retained session state combined with undersized heap for the new retention window, not a sudden memory leak in application code. The fix is to capture a heap histogram, reduce session TTL, trigger a graceful managed server restart, and confirm heap post-GC stabilises below 70%. In production, add heap-after-GC alerts and cap session replication payload size. Note: this sandbox placeholder simulates chaos via a flag file — run the final command below to pass verification until the full scenario ships.",
+    "commands": [
+      "jcmd <java-pid> GC.heap_info",
+      "jmap -histo:live <java-pid> | head -30",
+      "cd $DOMAIN_HOME && ./bin/stopManagedWebLogic.sh managed_server1",
+      "cd $DOMAIN_HOME && ./bin/startManagedWebLogic.sh managed_server1",
+      "rm /tmp/chaos-placeholder"
+    ]
+  }
 }
