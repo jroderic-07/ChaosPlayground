@@ -10,6 +10,7 @@ class LabTerminal {
         this._initTerminal();
         this._connect();
         this._bindResize();
+        this._bindClipboard();
     }
 
     _initTerminal() {
@@ -24,6 +25,7 @@ class LabTerminal {
                 selectionBackground: '#1a3a4a',
             },
             scrollback: 1000,
+            allowProposedApi: true,
         });
 
         const FitAddonCtor = window.FitAddon?.FitAddon || window.FitAddon;
@@ -68,6 +70,93 @@ class LabTerminal {
         });
     }
 
+    _bindClipboard() {
+        this._onPaste = async (event) => {
+            if (!this.term || this._disposed) {
+                return;
+            }
+            event.preventDefault();
+            const text = event.clipboardData?.getData('text') ?? await this._readClipboard();
+            if (text) {
+                this._paste(text);
+            }
+        };
+
+        this._onCopyClick = () => this._copy();
+        this._onPasteClick = async () => {
+            const text = await this._readClipboard();
+            if (text) {
+                this._paste(text);
+            }
+        };
+
+        this.containerEl.addEventListener('paste', this._onPaste);
+
+        this.term.attachCustomKeyEventHandler((event) => {
+            if (event.type !== 'keydown') {
+                return true;
+            }
+
+            if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'v') {
+                event.preventDefault();
+                this._readClipboard().then((text) => {
+                    if (text) {
+                        this._paste(text);
+                    }
+                });
+                return false;
+            }
+
+            if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'c') {
+                if (this.term.hasSelection()) {
+                    event.preventDefault();
+                    this._copy();
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        const copyBtn = document.getElementById('terminal-copy-btn');
+        const pasteBtn = document.getElementById('terminal-paste-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', this._onCopyClick);
+            this._copyBtn = copyBtn;
+        }
+        if (pasteBtn) {
+            pasteBtn.addEventListener('click', this._onPasteClick);
+            this._pasteBtn = pasteBtn;
+        }
+    }
+
+    async _readClipboard() {
+        try {
+            return await navigator.clipboard.readText();
+        } catch (err) {
+            console.warn('[terminal] Clipboard read failed — use Ctrl+Shift+V', err);
+            return '';
+        }
+    }
+
+    _paste(text) {
+        if (!this.term || this._disposed) {
+            return;
+        }
+        this.term.focus();
+        this.term.paste(text);
+    }
+
+    _copy() {
+        if (!this.term || !this.term.hasSelection()) {
+            return;
+        }
+        const text = this.term.getSelection();
+        navigator.clipboard.writeText(text).catch((err) => {
+            console.warn('[terminal] Clipboard write failed — use Ctrl+Shift+C', err);
+        });
+    }
+
     _bindResize() {
         this._onResize = () => {
             if (this.fitAddon && this.term) {
@@ -93,6 +182,17 @@ class LabTerminal {
 
         if (this._onResize) {
             window.removeEventListener('resize', this._onResize);
+        }
+
+        if (this._onPaste) {
+            this.containerEl.removeEventListener('paste', this._onPaste);
+        }
+
+        if (this._copyBtn && this._onCopyClick) {
+            this._copyBtn.removeEventListener('click', this._onCopyClick);
+        }
+        if (this._pasteBtn && this._onPasteClick) {
+            this._pasteBtn.removeEventListener('click', this._onPasteClick);
         }
 
         if (this.ws) {

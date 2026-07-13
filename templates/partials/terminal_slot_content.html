@@ -1,7 +1,28 @@
 {% if sandbox_active %}
-<div class="mb-3 flex items-center gap-2">
-    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-    <p class="text-xs font-medium uppercase tracking-wider text-emerald-400">Terminal Simulator</p>
+<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+        <p class="text-xs font-medium uppercase tracking-wider text-emerald-400">Terminal Simulator</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <button
+            type="button"
+            id="terminal-copy-btn"
+            title="Copy selection (Ctrl+Shift+C)"
+            class="rounded border border-surface-border bg-surface px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-gray-400 transition-colors hover:border-accent/30 hover:text-accent"
+        >
+            Copy
+        </button>
+        <button
+            type="button"
+            id="terminal-paste-btn"
+            title="Paste from clipboard (Ctrl+Shift+V)"
+            class="rounded border border-surface-border bg-surface px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-gray-400 transition-colors hover:border-accent/30 hover:text-accent"
+        >
+            Paste
+        </button>
+        <span class="text-[10px] text-gray-600">Ctrl+Shift+C / V</span>
+    </div>
 </div>
 <div class="overflow-hidden rounded border border-surface-border bg-[#0a0a0a] p-1">
     <div id="terminal" data-lab-id="{{ lab.id }}" class="h-56 w-full"></div>
