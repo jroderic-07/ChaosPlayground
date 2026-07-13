@@ -52,3 +52,11 @@ class BaseChaosLab(ABC):
     @abstractmethod
     def verify_fix(self, container: DockerContainer) -> bool:
         """Return True when the operator has resolved the injected issue."""
+
+    @property
+    def verification_success_message(self) -> str:
+        return f"Task Completed! {self.metadata.title} has been resolved."
+
+    @property
+    def verification_failure_message(self) -> str:
+        return "Still broken — keep investigating and try again."
