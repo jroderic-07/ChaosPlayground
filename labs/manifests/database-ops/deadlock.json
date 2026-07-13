@@ -1,0 +1,8 @@
+{
+  "id": "db-deadlock",
+  "title": "Deadlock Detection",
+  "description": "Two concurrent transactions are locking rows in opposite order, triggering repeated deadlock errors and rolling back critical writes.",
+  "category": "Database Ops",
+  "difficulty": "Hard",
+  "scenario": "placeholder"
+}

@@ -8,6 +8,7 @@ class LabMetadata(BaseModel):
     id: str
     title: str
     description: str
+    category: str
     difficulty: str
 
 

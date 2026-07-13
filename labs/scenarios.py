@@ -2,20 +2,13 @@ from labs.base import BaseChaosLab, DockerContainer, LabMetadata, exec_exit_code
 
 DISK_EXHAUSTION_LOG_PATH = "/var/log/app/debug_trace.log"
 CPU_ZOMBIE_PATTERN = "while true; do true; done"
+PLACEHOLDER_FLAG_PATH = "/tmp/chaos-placeholder"
 
 
 class DiskExhaustionLab(BaseChaosLab):
     @property
     def metadata(self) -> LabMetadata:
-        return LabMetadata(
-            id="disk-exhaustion",
-            title="Disk Exhaustion",
-            description=(
-                "An unmanaged logging process has written a 300MB debug trace file, "
-                "filling the container filesystem and threatening service stability."
-            ),
-            difficulty="beginner",
-        )
+        raise NotImplementedError("Metadata is provided by lab manifest")
 
     @property
     def image_name(self) -> str:
@@ -49,15 +42,7 @@ class DiskExhaustionLab(BaseChaosLab):
 class HighCpuZombieLab(BaseChaosLab):
     @property
     def metadata(self) -> LabMetadata:
-        return LabMetadata(
-            id="high-cpu-zombie",
-            title="High CPU Zombie",
-            description=(
-                "A rogue background shell loop is consuming CPU inside the container, "
-                "mimicking a runaway process left behind after a bad deploy."
-            ),
-            difficulty="intermediate",
-        )
+        raise NotImplementedError("Metadata is provided by lab manifest")
 
     @property
     def image_name(self) -> str:
@@ -89,3 +74,34 @@ class HighCpuZombieLab(BaseChaosLab):
     @property
     def verification_failure_message(self) -> str:
         return "Still broken — a zombie shell loop is still running. Find and kill it, then try again."
+
+
+class PlaceholderLab(BaseChaosLab):
+    @property
+    def metadata(self) -> LabMetadata:
+        raise NotImplementedError("Metadata is provided by lab manifest")
+
+    @property
+    def image_name(self) -> str:
+        return "alpine:latest"
+
+    def inject_chaos(self, container: DockerContainer) -> None:
+        container.exec_run(
+            [
+                "sh",
+                "-c",
+                f"echo 'Scenario placeholder active' > {PLACEHOLDER_FLAG_PATH}",
+            ]
+        )
+
+    def verify_fix(self, container: DockerContainer) -> bool:
+        result = container.exec_run(["test", "!", "-f", PLACEHOLDER_FLAG_PATH])
+        return exec_exit_code(result) == 0
+
+    @property
+    def verification_success_message(self) -> str:
+        return "Task Completed! Placeholder scenario cleared."
+
+    @property
+    def verification_failure_message(self) -> str:
+        return "Still broken — remove /tmp/chaos-placeholder to complete this placeholder lab."

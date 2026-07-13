@@ -1,0 +1,8 @@
+{
+  "id": "net-arp-issues",
+  "title": "ARP Spoofing / Table Issues",
+  "description": "Stale and conflicting ARP entries are directing traffic to the wrong interface, causing intermittent packet loss within the subnet.",
+  "category": "Networking",
+  "difficulty": "Hard",
+  "scenario": "placeholder"
+}

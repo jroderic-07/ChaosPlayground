@@ -1,0 +1,8 @@
+{
+  "id": "net-dns-failure",
+  "title": "DNS Resolution Failure",
+  "description": "Applications cannot resolve upstream service hostnames after a resolver misconfiguration, causing cascading connection failures.",
+  "category": "Networking",
+  "difficulty": "Easy",
+  "scenario": "placeholder"
+}

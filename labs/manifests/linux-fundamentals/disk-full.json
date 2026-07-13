@@ -1,0 +1,8 @@
+{
+  "id": "linux-disk-full",
+  "title": "Disk Full",
+  "description": "A runaway logging process has filled the root filesystem with a massive debug trace file, causing write failures across the host.",
+  "category": "Linux Fundamentals",
+  "difficulty": "Easy",
+  "scenario": "disk_exhaustion"
+}

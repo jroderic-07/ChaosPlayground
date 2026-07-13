@@ -1,0 +1,8 @@
+{
+  "id": "linux-zombie-process",
+  "title": "Zombie Process",
+  "description": "A rogue background shell loop is consuming CPU cycles, mimicking a runaway process left behind after a failed deployment.",
+  "category": "Linux Fundamentals",
+  "difficulty": "Medium",
+  "scenario": "zombie_process"
+}

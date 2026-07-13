@@ -1,0 +1,8 @@
+{
+  "id": "wl-server-oom",
+  "title": "Server Out of Memory",
+  "description": "A WebLogic managed server has exhausted its heap during a traffic spike, triggering frequent GC pauses and eventual OutOfMemoryError crashes.",
+  "category": "Middleware (WebLogic)",
+  "difficulty": "Easy",
+  "scenario": "placeholder"
+}

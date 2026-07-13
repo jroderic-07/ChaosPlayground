@@ -1,0 +1,8 @@
+{
+  "id": "linux-fd-leak",
+  "title": "File Descriptor Leak",
+  "description": "An application is leaking file descriptors until the process hits ulimit, causing 'too many open files' errors on new connections.",
+  "category": "Linux Fundamentals",
+  "difficulty": "Hard",
+  "scenario": "placeholder"
+}
