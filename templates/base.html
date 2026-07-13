@@ -79,6 +79,71 @@
         .htmx-request .start-lab-label {
             display: none;
         }
+
+        #notification-area.notification-area:empty {
+            display: none;
+        }
+
+        .notification-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            border-radius: 0.375rem;
+            padding: 0.875rem 1rem;
+            opacity: 0;
+            transform: translateY(-0.5rem);
+            animation: notification-fade 6s ease forwards;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .notification-banner--success {
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            background: rgba(16, 185, 129, 0.12);
+            color: #6ee7b7;
+        }
+
+        .notification-banner--failure {
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+        }
+
+        .notification-banner__icon {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.25rem;
+        }
+
+        .notification-banner__title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .notification-banner__message {
+            margin-top: 0.125rem;
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        @keyframes notification-fade {
+            0% {
+                opacity: 0;
+                transform: translateY(-0.5rem);
+            }
+            8% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            75% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-0.5rem);
+            }
+        }
     </style>
 </head>
 <body class="h-full bg-surface text-gray-200 antialiased">

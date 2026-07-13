@@ -1,0 +1,27 @@
+<p class="text-sm {% if passed %}text-emerald-400{% else %}text-red-400{% endif %}">
+    {% if passed %}
+    Verification passed — the injected issue appears to be resolved.
+    {% else %}
+    Verification failed — the issue is still present in the sandbox.
+    {% endif %}
+</p>
+
+<div id="notification-area" hx-swap-oob="true">
+    {% if passed %}
+    <div class="notification-banner notification-banner--success" role="alert">
+        <span class="notification-banner__icon">✓</span>
+        <div>
+            <p class="notification-banner__title">Task Completed!</p>
+            <p class="notification-banner__message">{{ success_message }}</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="notification-banner notification-banner--failure" role="alert">
+        <span class="notification-banner__icon">✕</span>
+        <div>
+            <p class="notification-banner__title">Not Fixed Yet</p>
+            <p class="notification-banner__message">{{ failure_message }}</p>
+        </div>
+    </div>
+    {% endif %}
+</div>

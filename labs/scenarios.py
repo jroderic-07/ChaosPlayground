@@ -37,6 +37,14 @@ class DiskExhaustionLab(BaseChaosLab):
         result = container.exec_run(["test", "!", "-f", DISK_EXHAUSTION_LOG_PATH])
         return exec_exit_code(result) == 0
 
+    @property
+    def verification_success_message(self) -> str:
+        return "Task Completed! The debug trace log has been removed and disk pressure is relieved."
+
+    @property
+    def verification_failure_message(self) -> str:
+        return "Still broken — /var/log/app/debug_trace.log is still present. Delete it and try again."
+
 
 class HighCpuZombieLab(BaseChaosLab):
     @property
@@ -73,3 +81,11 @@ class HighCpuZombieLab(BaseChaosLab):
             ]
         )
         return exec_exit_code(result) != 0
+
+    @property
+    def verification_success_message(self) -> str:
+        return "Task Completed! The rogue CPU loop has been terminated."
+
+    @property
+    def verification_failure_message(self) -> str:
+        return "Still broken — a zombie shell loop is still running. Find and kill it, then try again."

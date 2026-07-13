@@ -137,3 +137,80 @@ async def start_lab(request: Request, lab_id: str) -> HTMLResponse:
         name="partials/lab_started.html",
         context={"lab": metadata},
     )
+
+
+@router.post("/api/labs/{lab_id}/verify", response_class=HTMLResponse)
+async def verify_lab(request: Request, lab_id: str) -> HTMLResponse:
+    logger.info("Verification requested lab_id=%s client=%s", lab_id, request.client.host if request.client else "unknown")
+
+    lab = get_lab(lab_id)
+    metadata = get_lab_metadata(lab_id)
+
+    if lab is None or metadata is None:
+        logger.error("Verification failed — lab not found lab_id=%s", lab_id)
+        return templates.TemplateResponse(
+            request=request,
+            name="partials/verify_response.html",
+            context={
+                "passed": False,
+                "success_message": "",
+                "failure_message": f"Lab '{lab_id}' does not exist.",
+            },
+            status_code=404,
+        )
+
+    container = sandbox_manager.get_container(lab_id)
+    if container is None:
+        logger.error(
+            "Verification failed — no active sandbox lab_id=%s active_sessions=%s",
+            lab_id,
+            sandbox_manager.list_active_lab_ids(),
+        )
+        return templates.TemplateResponse(
+            request=request,
+            name="partials/verify_response.html",
+            context={
+                "passed": False,
+                "success_message": "",
+                "failure_message": "Sandbox is not active. Start the lab before verifying.",
+            },
+            status_code=400,
+        )
+
+    try:
+        passed = lab.verify_fix(container)
+    except Exception as exc:
+        logger.error(
+            "Verification check raised an error lab_id=%s container_id=%s error=%s",
+            lab_id,
+            container.id,
+            exc,
+            exc_info=True,
+        )
+        return templates.TemplateResponse(
+            request=request,
+            name="partials/verify_response.html",
+            context={
+                "passed": False,
+                "success_message": "",
+                "failure_message": f"Verification check failed unexpectedly. ({exc})",
+            },
+            status_code=500,
+        )
+
+    logger.info(
+        "Verification complete lab_id=%s container_id=%s passed=%s",
+        lab_id,
+        container.id,
+        passed,
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="partials/verify_response.html",
+        context={
+            "passed": passed,
+            "success_message": lab.verification_success_message,
+            "failure_message": lab.verification_failure_message,
+        },
+    )
